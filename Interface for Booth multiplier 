@@ -1,0 +1,71 @@
+
+// Interface for Booth Multiplier Testbench
+ ===========================================
+interface booth_if #(parameter N = 8) (input logic clk);
+
+    logic             rst;
+    logic             start;
+    logic [N-1:0]     multiplicand;
+    logic [N-1:0]     multiplier;
+    logic [2*N-1:0]   product;
+    logic             done;
+
+    // Clocking block used by the Driver (drives DUT inputs)
+    clocking drv_cb @(posedge clk);
+        output rst, start, multiplicand, multiplier;
+        input  done, product;
+    endclocking
+
+    // Clocking block used by the Monitor (samples everything, read only)
+    clocking mon_cb @(posedge clk);
+        input rst, start, multiplicand, multiplier, done, product;
+    endclocking
+
+    modport DRIVER  (clocking drv_cb, input clk);
+    modport MONITOR (clocking mon_cb, input clk);
+
+    // =============================================
+    // INTERFACE-LEVEL ASSERTIONS (protocol checks between TB and DUT)
+     =============================================
+
+    // Internal "busy" tracker: high from the cycle after 'start' is seen
+    // until 'done' is observed.
+    logic busy;
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst)
+            busy <= 1'b0;
+        else if (start && !busy)
+            busy <= 1'b1;
+        else if (done)
+            busy <= 1'b0;
+    end
+
+    // A6: 'start' must be a single-cycle pulse (driver must deassert it
+    //     the very next cycle, never hold it high back-to-back)
+    property p_start_single_cycle;
+        @(posedge clk) disable iff (rst)
+        start |=> !start;
+    endproperty
+    assert property (p_start_single_cycle)
+        else $error("ASSERTION FAILED: 'start' held high for more than one cycle at time %0t", $time);
+
+    // A7: 'multiplicand'/'multiplier' must remain stable while an
+    //     operation is in progress (protects against the driver
+    //     accidentally changing inputs mid-computation)
+    property p_data_stable_during_op;
+        @(posedge clk) disable iff (rst)
+        (busy && !done) |=> ($stable(multiplicand) && $stable(multiplier));
+    endproperty
+    assert property (p_data_stable_during_op)
+        else $error("ASSERTION FAILED: multiplicand/multiplier changed while DUT was busy at time %0t", $time);
+
+    // A8: A new 'start' must not be issued while the DUT is still busy
+    //     with a previous operation (no back-to-back overlapping ops)
+    property p_no_start_while_busy;
+        @(posedge clk) disable iff (rst)
+        busy |-> !start;
+    endproperty
+    assert property (p_no_start_while_busy)
+        else $error("ASSERTION FAILED: 'start' asserted while DUT still busy at time %0t", $time);
+
+endinterface
