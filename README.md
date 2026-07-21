@@ -1,6 +1,7 @@
-# Signed_Booth_Multiplier_uvm
-Designed and verified a Signed Booth Multiplier using UVM (Universal Verification Methodology).The project includes a reusable UVM testbench with transaction, sequence, driver, monitor, scoreboard, coverage, agent, environment, and test components.
+# Designed and verified a Signed Booth Multiplier using Verilog and UVM (Universal Verification Methodology). 
 
-Implemented constrained-random stimulus, self-checking scoreboard, SystemVerilog Assertions (SVA), and comprehensive corner-case testing to validate signed two's complement multiplication with functional coverage.
+Developed a reusable UVM testbench with transaction, sequence, driver, monitor, scoreboard, coverage, agent, environment, and test components. 
 
-Functional verification is performed using constrained-random stimulus and self-checking mechanisms to validate signed multiplication in two's complement representation.
+Performed constrained-random verification, functional coverage, SystemVerilog Assertions (SVA), and extensive corner-case testing to ensure design correctness.
+
+Implemented the design on the Nexys FPGA board and analyzed resource and power utilization using Xilinx Vivado.
