@@ -1,6 +1,11 @@
+// =============================================
+// Booth Multiplier - Datapath + Controller (FSM) + Top Module
+// N-bit signed multiplication using Booth's Algorithm
 
+
+// ---------------------------------------------
 // DATAPATH
- ---------------------------------------------
+// ---------------------------------------------------------------------
 module booth_datapath #(parameter N = 8) (
     input  logic             clk,
     input  logic             rst,
@@ -70,9 +75,9 @@ module booth_datapath #(parameter N = 8) (
     assign count_zero = (count == '0);
     assign product     = {A_reg[N-1:0], Q_reg}; // drop the guard bit
 
-    
+    // ===================================================================
     // ASSERTIONS
-     =============================================
+    // ===================================================================
 
     // A5: The iteration counter must never be decremented once it has
     //     already reached zero (protects against counter underflow, which
@@ -87,9 +92,9 @@ module booth_datapath #(parameter N = 8) (
 endmodule
 
 
-
+// ---------------------------------------------------------------------
 // CONTROLLER (Finite State Machine)
-
+// ---------------------------------------------------------------------
 module booth_controller (
     input  logic clk,
     input  logic rst,
@@ -166,8 +171,10 @@ module booth_controller (
         endcase
     end
 
-    // =============================================
-    // ASSERTIONS (SystemVerilog Assertions 
+    // ===================================================================
+    // ASSERTIONS (SystemVerilog Assertions -- continuous protocol checks)
+    // ===================================================================
+
     // A1: add_en and sub_en must never be asserted in the same cycle
     //     (Booth's algorithm decides exactly one of add/sub/no-op per step)
     property p_no_simultaneous_add_sub;
@@ -210,9 +217,9 @@ module booth_controller (
 endmodule
 
 
- ---------------------------------------------
+// ---------------------------------------------------------------------
 // TOP MODULE
- ---------------------------------------------
+// ---------------------------------------------------------------------
 module booth_mult_top #(parameter N = 8) (
     input  logic             clk,
     input  logic             rst,
